@@ -1,17 +1,58 @@
-import { Link } from "expo-router";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Link, useFocusEffect } from "expo-router";
+import { View, Pressable, StyleSheet, FlatList, Image } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useCallback, useEffect, useState } from "react";
+import * as FileSystem from "expo-file-system";
+
+type Media = {
+  name: string;
+  uri: string;
+};
 
 export default function HomeScreen() {
+  const [images, setImages] = useState<Media[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadFiles();
+    }, [])
+  );
+
+  const loadFiles = async () => {
+    if (!FileSystem.documentDirectory) {
+      return;
+    }
+
+    const res = await FileSystem.readDirectoryAsync(
+      FileSystem.documentDirectory
+    );
+
+    setImages(
+      res.map((file) => ({
+        name: file,
+        uri: FileSystem.documentDirectory + file,
+      }))
+    );
+  };
+
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontSize: 24, fontWeight: "600" }}>Home Screen</Text>
-
-      <Link href={"/image-1"}>Image 1</Link>
-      <Link href={"/image-2"}>Image 2</Link>
-      <Link href={"/image-3"}>Image 3</Link>
-
-      <Link href={"/profile"}>Profile</Link>
+    <View style={{ flex: 1 }}>
+      <FlatList
+        data={images}
+        numColumns={3}
+        contentContainerStyle={{ gap: 1 }}
+        columnWrapperStyle={{ gap: 1 }}
+        renderItem={({ item }) => (
+          <Link href={`/${item.name}`} asChild>
+            <Pressable style={{ flex: 1, maxWidth: "33.33%" }}>
+              <Image
+                source={{ uri: item.uri }}
+                style={{ aspectRatio: 3 / 4, borderRadius: 5 }}
+              />
+            </Pressable>
+          </Link>
+        )}
+      />
 
       <Link href="/camera" asChild>
         <Pressable style={styles.floatingButton}>
