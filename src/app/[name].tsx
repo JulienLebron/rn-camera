@@ -2,11 +2,20 @@ import { Link, useLocalSearchParams, Stack, router } from "expo-router";
 import { View, Image } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { ResizeMode, Video } from "expo-av";
+import { getMediaType } from "../utils/media";
 
 export default function ImageScreen() {
   const { name } = useLocalSearchParams<{ name: string }>();
 
   const fullUri = (FileSystem.documentDirectory || "") + (name || "");
+  const type = getMediaType(fullUri);
+
+  const player = useVideoPlayer(fullUri, (player) => {
+    player.loop = true;
+    player.play();
+  });
 
   const onDelete = async () => {
     await FileSystem.deleteAsync(fullUri);
@@ -37,10 +46,28 @@ export default function ImageScreen() {
         }}
       />
 
-      <Image
-        source={{ uri: fullUri }}
-        style={{ width: "100%", height: "100%" }}
-      />
+      {type === "image" && (
+        <Image
+          source={{ uri: fullUri }}
+          style={{ width: "100%", height: "100%" }}
+        />
+      )}
+
+      {type === "video" && (
+        // <Video
+        //   source={{ uri: fullUri }}
+        //   style={{ width: '100%', height: '100%' }}
+        //   resizeMode={ResizeMode.COVER}
+        //   shouldPlay
+        //   isLooping
+        //   useNativeControls
+        // />
+        <VideoView
+          player={player}
+          style={{ width: "100%", height: "100%" }}
+          contentFit="cover"
+        />
+      )}
     </View>
   );
 }
