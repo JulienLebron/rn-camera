@@ -24,7 +24,8 @@
     "react-native-screens": "~4.11.1",
     "react-native-web": "^0.20.0",
     "expo-av": "~15.1.6",
-    "expo-video": "~2.2.2"
+    "expo-video": "~2.2.2",
+    "expo-media-library": "~17.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

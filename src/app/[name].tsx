@@ -1,13 +1,15 @@
-import { Link, useLocalSearchParams, Stack, router } from "expo-router";
+import { useLocalSearchParams, Stack, router } from "expo-router";
 import { View, Image } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { ResizeMode, Video } from "expo-av";
 import { getMediaType } from "../utils/media";
+import * as MediaLibrary from "expo-media-library";
 
 export default function ImageScreen() {
   const { name } = useLocalSearchParams<{ name: string }>();
+  const [permissionResponse, requestPermissions] =
+    MediaLibrary.usePermissions();
 
   const fullUri = (FileSystem.documentDirectory || "") + (name || "");
   const type = getMediaType(fullUri);
@@ -20,6 +22,14 @@ export default function ImageScreen() {
   const onDelete = async () => {
     await FileSystem.deleteAsync(fullUri);
     router.back();
+  };
+
+  const onSave = async () => {
+    // save to media library
+    if (permissionResponse?.status !== "granted") {
+      await requestPermissions();
+    }
+    const asset = await MediaLibrary.createAssetAsync(fullUri);
   };
 
   return (
@@ -36,7 +46,7 @@ export default function ImageScreen() {
                 color="crimson"
               />
               <MaterialIcons
-                onPress={() => {}}
+                onPress={onSave}
                 name="save"
                 size={26}
                 color="dimgray"
